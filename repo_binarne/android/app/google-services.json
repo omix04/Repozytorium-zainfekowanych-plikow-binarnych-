@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "309976053778",
+    "project_id": "repozytorium-binarne",
+    "storage_bucket": "repozytorium-binarne.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309976053778:android:de6a09726c6205d10600cb",
+        "android_client_info": {
+          "package_name": "com.example.repo_binarne"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCF2VHeY85ZmiTtN8L_ptn8Hf5t5vf1gjU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
