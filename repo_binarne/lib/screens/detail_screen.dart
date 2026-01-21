@@ -64,7 +64,6 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(item.fileName),
-
         // ✅ Edycja/Usuwanie TYLKO dla admina
         actions: [
           if (admin)
@@ -133,6 +132,37 @@ class DetailScreen extends StatelessWidget {
               _safe(item.storagePath),
               item.storagePathDescription,
             ),
+
+            // --- NOWA SEKCJA: STATUS BEZPIECZEŃSTWA (MD5) ---
+            const Divider(),
+            const SizedBox(height: 12),
+            const Text(
+              'Status Bezpieczeństwa',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                item.md5 != null ? Icons.verified : Icons.warning,
+                color: item.md5 != null ? Colors.green : Colors.orange,
+                size: 32,
+              ),
+              title: SelectableText(
+                item.md5 ?? 'Brak weryfikacji MD5',
+                style: const TextStyle(
+                  fontFamily: 'Courier', 
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Text(
+                item.lastVerified != null 
+                  ? 'Zweryfikowano: ${item.lastVerified}' 
+                  : 'Wymagana ręczna weryfikacja przez admina',
+              ),
+            ),
+            // --- KONIEC NOWEJ SEKCJI ---
 
             const SizedBox(height: 20),
             const Divider(),
