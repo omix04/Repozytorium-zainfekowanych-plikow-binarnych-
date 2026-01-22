@@ -17,11 +17,17 @@ class _EditItemScreenState extends State<EditItemScreen> {
   final _repo = FirebaseRepository();
 
   late final TextEditingController _fileName;
+  late final TextEditingController _fileNameDescription;
   late final TextEditingController _format;
+  late final TextEditingController _formatDescription;
   late final TextEditingController _platform;
+  late final TextEditingController _platformDescription;
   late final TextEditingController _source;
+  late final TextEditingController _sourceDescription;
   late final TextEditingController _status;
+  late final TextEditingController _statusDescription;
   late final TextEditingController _storagePath;
+  late final TextEditingController _storagePathDescription;
 
   bool _saving = false;
 
@@ -35,21 +41,33 @@ class _EditItemScreenState extends State<EditItemScreen> {
     super.initState();
     final it = widget.item;
     _fileName = TextEditingController(text: it?.fileName ?? '');
+    _fileNameDescription = TextEditingController(text: it?.fileNameDescription ?? '');
     _format = TextEditingController(text: it?.format ?? '');
+    _formatDescription = TextEditingController(text: it?.formatDescription ?? '');
     _platform = TextEditingController(text: it?.platform ?? '');
+    _platformDescription = TextEditingController(text: it?.platformDescription ?? '');
     _source = TextEditingController(text: it?.source ?? '');
+    _sourceDescription = TextEditingController(text: it?.sourceDescription ?? '');
     _status = TextEditingController(text: it?.status ?? '');
+    _statusDescription = TextEditingController(text: it?.statusDescription ?? '');
     _storagePath = TextEditingController(text: it?.storagePath ?? '');
+    _storagePathDescription = TextEditingController(text: it?.storagePathDescription ?? '');
   }
 
   @override
   void dispose() {
     _fileName.dispose();
+    _fileNameDescription.dispose();
     _format.dispose();
+    _formatDescription.dispose();
     _platform.dispose();
+    _platformDescription.dispose();
     _source.dispose();
+    _sourceDescription.dispose();
     _status.dispose();
+    _statusDescription.dispose();
     _storagePath.dispose();
+    _storagePathDescription.dispose();
     super.dispose();
   }
 
@@ -70,27 +88,23 @@ class _EditItemScreenState extends State<EditItemScreen> {
     try {
       final isEdit = widget.item != null;
 
-   final item = BinaryItem(
-  id: widget.item?.id ?? '',
-
-  fileName: _fileName.text.trim(),
-  fileNameDescription: widget.item?.fileNameDescription ?? '',
-
-  format: _format.text.trim().toLowerCase(),
-  formatDescription: widget.item?.formatDescription ?? '',
-
-  platform: _platform.text.trim(),
-  platformDescription: widget.item?.platformDescription ?? '',
-
-  source: _source.text.trim(),
-  sourceDescription: widget.item?.sourceDescription ?? '',
-
-  status: _status.text.trim(),
-  statusDescription: widget.item?.statusDescription ?? '',
-
-  storagePath: _storagePath.text.trim(),
-  storagePathDescription: widget.item?.storagePathDescription ?? '',
-);
+      final item = BinaryItem(
+        id: widget.item?.id ?? '',
+        fileName: _fileName.text.trim(),
+        fileNameDescription: _fileNameDescription.text.trim(),
+        format: _format.text.trim().toLowerCase(),
+        formatDescription: _formatDescription.text.trim(),
+        platform: _platform.text.trim(),
+        platformDescription: _platformDescription.text.trim(),
+        source: _source.text.trim(),
+        sourceDescription: _sourceDescription.text.trim(),
+        status: _status.text.trim(),
+        statusDescription: _statusDescription.text.trim(),
+        storagePath: _storagePath.text.trim(),
+        storagePathDescription: _storagePathDescription.text.trim(),
+        md5: widget.item?.md5,
+        lastVerified: widget.item?.lastVerified,
+      );
 
 
       if (isEdit) {
@@ -127,56 +141,116 @@ class _EditItemScreenState extends State<EditItemScreen> {
               TextFormField(
                 controller: _fileName,
                 decoration: const InputDecoration(
-                  labelText: 'fileName (np. sample.exe)',
+                  labelText: 'Nazwa pliku',
+                  hintText: 'np. sample.exe',
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _fileNameDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis nazwy pliku',
+                  hintText: 'Dodatkowe informacje o nazwie',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _format,
                 decoration: const InputDecoration(
-                  labelText: 'format (exe / jpg / png)',
+                  labelText: 'Format',
+                  hintText: 'exe / jpg / png',
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _formatDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis formatu',
+                  hintText: 'Dodatkowe informacje o formacie',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _platform,
                 decoration: const InputDecoration(
-                  labelText: 'platform (np. Windows)',
+                  labelText: 'Platforma',
+                  hintText: 'np. Windows, Linux, Android',
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _platformDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis platformy',
+                  hintText: 'Dodatkowe informacje o platformie',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _source,
                 decoration: const InputDecoration(
-                  labelText: 'source (np. paczka)',
+                  labelText: 'Źródło',
+                  hintText: 'np. email, paczka, download',
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _sourceDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis źródła',
+                  hintText: 'Dodatkowe informacje o źródle',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _status,
                 decoration: const InputDecoration(
-                  labelText: 'status (to analysis / infected)',
+                  labelText: 'Status',
+                  hintText: 'to analysis / infected / clean',
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _statusDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis statusu',
+                  hintText: 'Dodatkowe informacje o statusie',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _storagePath,
                 decoration: const InputDecoration(
-                  labelText: 'storagePath (binaries/sample.exe)',
+                  labelText: 'Ścieżka w Storage',
+                  hintText: 'binaries/sample.exe',
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _storagePathDescription,
+                decoration: const InputDecoration(
+                  labelText: 'Opis ścieżki',
+                  hintText: 'Dodatkowe informacje o lokalizacji',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 24),
 
               ElevatedButton.icon(
                 onPressed: _saving ? null : _save,

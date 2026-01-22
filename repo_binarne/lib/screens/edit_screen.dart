@@ -68,6 +68,10 @@ class _EditItemScreenState extends State<EditItemScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             _buildField("fileName", _fileName, _fileNameDesc),
+            _buildField("format", _format, _formatDesc),
+            _buildField("platform", _platform, _platformDesc),
+            _buildField("source", _source, _sourceDesc),
+            _buildField("status", _status, _statusDesc),
             _buildField("storagePath", _storagePath, _storagePathDesc),
             const SizedBox(height: 10),
             if (widget.item != null)
@@ -93,5 +97,68 @@ class _EditItemScreenState extends State<EditItemScreen> {
     ]);
   }
 
-  Future<void> _save() async { /* Logika zapisu pozostaje bez zmian jak w edit_screen.dart */ }
+  Future<void> _save() async {
+    final u = FirebaseAuth.instance.currentUser;
+    if (u == null || u.isAnonymous) {
+      _showMsg('Tylko zalogowani mogą edytować/dodawać metadane');
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _saving = true);
+
+    try {
+      final isEdit = widget.item != null;
+
+      final item = BinaryItem(
+        id: widget.item?.id ?? '',
+        fileName: _fileName.text.trim(),
+        fileNameDescription: _fileNameDesc.text.trim(),
+        format: _format.text.trim().toLowerCase(),
+        formatDescription: _formatDesc.text.trim(),
+        platform: _platform.text.trim(),
+        platformDescription: _platformDesc.text.trim(),
+        source: _source.text.trim(),
+        sourceDescription: _sourceDesc.text.trim(),
+        status: _status.text.trim(),
+        statusDescription: _statusDesc.text.trim(),
+        storagePath: _storagePath.text.trim(),
+        storagePathDescription: _storagePathDesc.text.trim(),
+        md5: widget.item?.md5,
+        lastVerified: widget.item?.lastVerified,
+      );
+
+      if (isEdit) {
+        await _repo.updateItem(item);
+      } else {
+        await _repo.addItem(item);
+      }
+
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        _showMsg('Błąd zapisu: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _fileName.dispose();
+    _fileNameDesc.dispose();
+    _format.dispose();
+    _formatDesc.dispose();
+    _platform.dispose();
+    _platformDesc.dispose();
+    _source.dispose();
+    _sourceDesc.dispose();
+    _status.dispose();
+    _statusDesc.dispose();
+    _storagePath.dispose();
+    _storagePathDesc.dispose();
+    super.dispose();
+  }
 }
