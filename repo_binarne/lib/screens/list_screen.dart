@@ -8,20 +8,31 @@ import 'detail_screen.dart';
 import 'edit_screen.dart';
 import 'login_screen.dart';
 
-class ListScreen extends StatelessWidget {
+class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
+
+  @override
+  State<ListScreen> createState() => _ListScreenState();
+}
+
+class _ListScreenState extends State<ListScreen> {
+  final _repo = FirebaseRepository();
+  final _auth = AuthRepository();
+  int _refreshKey = 0;
 
   bool _isLogged(User? user) => user != null && !user.isAnonymous;
   bool _isAdmin(User? user) =>
       user != null && !user.isAnonymous && user.email == 'omix041@gmail.com';
 
+  Future<void> _refresh() async {
+    setState(() => _refreshKey++);
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final repo = FirebaseRepository();
-    final auth = AuthRepository();
-
     return StreamBuilder<User?>(
-      stream: auth.authStateChanges(),
+      stream: _auth.authStateChanges(),
       builder: (context, authSnap) {
         final user = authSnap.data;
         final logged = _isLogged(user);
@@ -70,7 +81,7 @@ class ListScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => LoginScreen(authRepository: auth),
+                          builder: (_) => LoginScreen(authRepository: _auth),
                         ),
                       );
                     },
@@ -82,14 +93,13 @@ class ListScreen extends StatelessWidget {
                     title: const Text('Wyloguj'),
                     onTap: () async {
                       Navigator.pop(context);
-                      await auth.signOut();
+                      await _auth.signOut();
                     },
                   ),
               ],
             ),
           ),
 
-          // ✅ Dodawanie TYLKO dla admina
           floatingActionButton: admin
               ? FloatingActionButton(
                   onPressed: () async {
@@ -103,7 +113,8 @@ class ListScreen extends StatelessWidget {
               : null,
 
           body: StreamBuilder<List<BinaryItem>>(
-            stream: repo.watchItems(),
+            key: ValueKey(_refreshKey),
+            stream: _repo.watchItems(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -114,10 +125,19 @@ class ListScreen extends StatelessWidget {
 
               final items = snapshot.data ?? [];
               if (items.isEmpty) {
-                return const Center(child: Text('Brak plików w repozytorium.'));
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    children: const [
+                      SizedBox(
+                        height: 200,
+                        child: Center(child: Text('Brak plików w repozytorium.')),
+                      ),
+                    ],
+                  ),
+                );
               }
 
-              // Grupowanie po formacie
               final Map<String, List<BinaryItem>> groups = {};
               for (final item in items) {
                 final format = item.format.trim().toLowerCase().isEmpty
@@ -131,59 +151,60 @@ class ListScreen extends StatelessWidget {
                 groups[f]!.sort((a, b) => a.fileName.compareTo(b.fileName));
               }
 
-              return ListView(
-                children: formats.map((format) {
-                  final groupItems = groups[format]!;
-                  return ExpansionTile(
-                    initiallyExpanded: true,
-                    title: Text(
-                      '${format.toUpperCase()} (${groupItems.length})',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    children: groupItems.map((item) {
-                      final platform =
-                          item.platform.trim().isEmpty ? 'unknown' : item.platform;
-                      final status =
-                          item.status.trim().isEmpty ? 'unknown' : item.status;
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  children: formats.map((format) {
+                    final groupItems = groups[format]!;
+                    return ExpansionTile(
+                      initiallyExpanded: true,
+                      title: Text(
+                        '${format.toUpperCase()} (${groupItems.length})',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      children: groupItems.map((item) {
+                        final platform =
+                            item.platform.trim().isEmpty ? 'unknown' : item.platform;
+                        final status =
+                            item.status.trim().isEmpty ? 'unknown' : item.status;
 
-                      return ListTile(
-                        leading: _iconForFormat(item.format),
-                        title: Text(item.fileName),
+                        return ListTile(
+                          leading: _iconForFormat(item.format),
+                          title: Text(item.fileName),
 
-                        // 👀 Gość widzi tylko minimum, zalogowany widzi więcej
-                        subtitle: Text(
-                          logged
-                              ? '$platform • ${item.format} • $status'
-                              : item.format.toUpperCase(),
-                        ),
+                          subtitle: Text(
+                            logged
+                                ? '$platform • ${item.format} • $status'
+                                : item.format.toUpperCase(),
+                          ),
 
-                        trailing: logged
-                            ? const Icon(Icons.chevron_right)
-                            : const Icon(Icons.lock_outline),
+                          trailing: logged
+                              ? const Icon(Icons.chevron_right)
+                              : const Icon(Icons.lock_outline),
 
-                        // 🔒 Gość nie może wejść w szczegóły
-                        onTap: logged
-                            ? () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => DetailScreen(item: item),
-                                  ),
-                                );
-                              }
-                            : () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Zaloguj się, aby zobaczyć metadane.',
+                          onTap: logged
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => DetailScreen(item: item),
                                     ),
-                                  ),
-                                );
-                              },
-                      );
-                    }).toList(),
-                  );
-                }).toList(),
+                                  );
+                                }
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Zaloguj się, aby zobaczyć metadane.',
+                                      ),
+                                    ),
+                                  );
+                                },
+                        );
+                      }).toList(),
+                    );
+                  }).toList(),
+                ),
               );
             },
           ),
