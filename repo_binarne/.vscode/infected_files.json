@@ -1,0 +1,9 @@
+{
+  "infected_files": [],
+  "description": "Add file paths here to mark them as infected. The system will highlight them in red in VS Code.",
+  "example": {
+    "path": "lib/screens/example_file.dart",
+    "status": "infected",
+    "reason": "Contains suspicious code pattern"
+  }
+}

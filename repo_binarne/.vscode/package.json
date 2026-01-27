@@ -1,0 +1,30 @@
+{
+  "name": "infected-file-tagger",
+  "displayName": "Infected File Tagger",
+  "description": "Highlights infected files in red based on metadata status",
+  "version": "1.0.0",
+  "publisher": "workspace",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "infectedFileTagger.tagAsInfected",
+        "title": "Tag as Infected"
+      },
+      {
+        "command": "infectedFileTagger.removeInfectionTag",
+        "title": "Remove Infection Tag"
+      },
+      {
+        "command": "infectedFileTagger.showInfectedFiles",
+        "title": "Show All Infected Files"
+      }
+    ]
+  }
+}

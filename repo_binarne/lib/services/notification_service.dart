@@ -5,29 +5,21 @@ class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   Future<void> initialize() async {
-    try {
-      if (kIsWeb) {
-        await _requestWebPermission().timeout(const Duration(seconds: 5));
-      } else {
-        await _requestMobilePermission().timeout(const Duration(seconds: 5));
-      }
-    } catch (e) {
-      debugPrint('FCM permission request failed: $e');
+    if (kIsWeb) {
+      await _requestWebPermission();
+    } else {
+      await _requestMobilePermission();
     }
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-    try {
-      final token = await _messaging.getToken(
-        vapidKey: kIsWeb ? 'BKFN_ic4RRxyjQFnfUuqOPDH3MKDGBdtCCyChMSbKezvTnjBtGdbNwynnEf7JPhtNhuH59M4XFeJkVkdC6tP9CI' : null,
-      ).timeout(const Duration(seconds: 10));
+    final token = await _messaging.getToken(
+      vapidKey: kIsWeb ? 'BKFN_ic4RRxyjQFnfUuqOPDH3MKDGBdtCCyChMSbKezvTnjBtGdbNwynnEf7JPhtNhuH59M4XFeJkVkdC6tP9CI' : null,
+    );
 
-      if (token != null) {
-        debugPrint('FCM Token: $token');
-      }
-    } catch (e) {
-      debugPrint('FCM getToken failed: $e');
+    if (token != null) {
+      debugPrint('FCM Token: $token');
     }
   }
 

@@ -5,7 +5,6 @@ import '../data/auth_repository.dart';
 import '../data/firebase_repository.dart';
 import '../models/binary_item.dart';
 import 'detail_screen.dart';
-import 'edit_screen.dart';
 import 'login_screen.dart';
 
 class ListScreen extends StatefulWidget {
@@ -21,8 +20,6 @@ class _ListScreenState extends State<ListScreen> {
   int _refreshKey = 0;
 
   bool _isLogged(User? user) => user != null && !user.isAnonymous;
-  bool _isAdmin(User? user) =>
-      user != null && !user.isAnonymous && user.email == 'omix041@gmail.com';
 
   Future<void> _refresh() async {
     setState(() => _refreshKey++);
@@ -36,7 +33,6 @@ class _ListScreenState extends State<ListScreen> {
       builder: (context, authSnap) {
         final user = authSnap.data;
         final logged = _isLogged(user);
-        final admin = _isAdmin(user);
 
         return Scaffold(
           appBar: AppBar(title: const Text('Repozytorium binariów')),
@@ -50,22 +46,12 @@ class _ListScreenState extends State<ListScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Repozytorium binariów',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
+                      const Text('Repozytorium binariów', style: TextStyle(color: Colors.white, fontSize: 18)),
                       const SizedBox(height: 10),
-                      Text(
-                        logged ? (user!.email ?? user.uid) : 'Gość',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
+                      Text(logged ? (user!.email ?? user.uid) : 'Gość', style: const TextStyle(color: Colors.white70)),
                       const SizedBox(height: 6),
                       Text(
-                        admin
-                            ? 'Uprawnienia: ADMIN (CRUD)'
-                            : (logged
-                                ? 'Uprawnienia: USER (podgląd metadanych)'
-                                : 'Uprawnienia: GUEST (lista bez metadanych)'),
+                        logged ? 'Uprawnienia: Edycja metadanych' : 'Uprawnienia: Tylko podgląd',
                         style: const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
@@ -78,12 +64,7 @@ class _ListScreenState extends State<ListScreen> {
                     title: const Text('Zaloguj'),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LoginScreen(authRepository: _auth),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => LoginScreen(authRepository: _auth)));
                     },
                   ),
 
@@ -100,17 +81,7 @@ class _ListScreenState extends State<ListScreen> {
             ),
           ),
 
-          floatingActionButton: admin
-              ? FloatingActionButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const EditItemScreen()),
-                    );
-                  },
-                  child: const Icon(Icons.add),
-                )
-              : null,
+          floatingActionButton: null,
 
           body: StreamBuilder<List<BinaryItem>>(
             key: ValueKey(_refreshKey),
@@ -128,21 +99,14 @@ class _ListScreenState extends State<ListScreen> {
                 return RefreshIndicator(
                   onRefresh: _refresh,
                   child: ListView(
-                    children: const [
-                      SizedBox(
-                        height: 200,
-                        child: Center(child: Text('Brak plików w repozytorium.')),
-                      ),
-                    ],
+                    children: const [SizedBox(height: 200, child: Center(child: Text('Brak plików w repozytorium.')))],
                   ),
                 );
               }
 
               final Map<String, List<BinaryItem>> groups = {};
               for (final item in items) {
-                final format = item.format.trim().toLowerCase().isEmpty
-                    ? 'unknown'
-                    : item.format.trim().toLowerCase();
+                final format = item.format.trim().toLowerCase().isEmpty ? 'unknown' : item.format.trim().toLowerCase();
                 groups.putIfAbsent(format, () => []).add(item);
               }
 
@@ -163,43 +127,45 @@ class _ListScreenState extends State<ListScreen> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       children: groupItems.map((item) {
-                        final platform =
-                            item.platform.trim().isEmpty ? 'unknown' : item.platform;
-                        final status =
-                            item.status.trim().isEmpty ? 'unknown' : item.status;
+                        final platform = item.platform.trim().isEmpty ? 'unknown' : item.platform;
+                        final status = item.status.trim().isEmpty ? 'unknown' : item.status;
 
-                        return ListTile(
-                          leading: _iconForFormat(item.format),
-                          title: Text(item.fileName),
+                        // 🔴 Check if file is infected
+                        final isInfected = logged && status.toLowerCase() == 'infected';
 
-                          subtitle: Text(
-                            logged
-                                ? '$platform • ${item.format} • $status'
-                                : item.format.toUpperCase(),
+                        return Container(
+                          color: isInfected ? Colors.red.shade100 : null,
+                          child: ListTile(
+                            leading: _iconForFormat(item.format),
+                            title: Text(
+                              item.fileName,
+                              style: isInfected
+                                  ? TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.bold)
+                                  : null,
+                            ),
+
+                            subtitle: Text(
+                              logged ? '$platform • ${item.format} • $status' : item.format.toUpperCase(),
+                              style: isInfected ? TextStyle(color: Colors.red.shade600) : null,
+                            ),
+
+                            trailing: isInfected
+                                ? Icon(Icons.warning, color: Colors.red.shade800)
+                                : (logged ? const Icon(Icons.chevron_right) : const Icon(Icons.lock_outline)),
+
+                            onTap: logged
+                                ? () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => DetailScreen(item: item)),
+                                    );
+                                  }
+                                : () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Zaloguj się, aby zobaczyć metadane.')),
+                                    );
+                                  },
                           ),
-
-                          trailing: logged
-                              ? const Icon(Icons.chevron_right)
-                              : const Icon(Icons.lock_outline),
-
-                          onTap: logged
-                              ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => DetailScreen(item: item),
-                                    ),
-                                  );
-                                }
-                              : () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Zaloguj się, aby zobaczyć metadane.',
-                                      ),
-                                    ),
-                                  );
-                                },
                         );
                       }).toList(),
                     );
@@ -215,11 +181,7 @@ class _ListScreenState extends State<ListScreen> {
 
   Icon _iconForFormat(String format) {
     final f = format.trim().toLowerCase();
-    if (f == 'jpg' ||
-        f == 'jpeg' ||
-        f == 'png' ||
-        f == 'gif' ||
-        f == 'webp') {
+    if (f == 'jpg' || f == 'jpeg' || f == 'png' || f == 'gif' || f == 'webp') {
       return const Icon(Icons.image);
     }
     if (f == 'pdf') return const Icon(Icons.picture_as_pdf);

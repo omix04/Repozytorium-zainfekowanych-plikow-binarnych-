@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infected Files Tagger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ee5a6f 0%, #f64a42 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ee5a6f;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #ee5a6f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #f64a42;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 90, 111, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #ee5a6f;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: #fff3f4;
+        }
+
+        .file-item-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .file-item-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+
+        .file-item button {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #f64a42;
+        }
+
+        .file-item button:hover {
+            background: #ee5a6f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ee5a6f;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #667eea;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 Infected Files Tagger</h1>
+            <p>Manage and track infected binary files in your repository</p>
+        </div>
+
+        <div class="content">
+            <div class="success-message" id="successMsg">✓ Operation completed successfully</div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="infectedCount">0</div>
+                    <div class="stat-label">Infected Files</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="lastUpdated">-</div>
+                    <div class="stat-label">Last Updated</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">➕ Tag New File as Infected</div>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="fileInput" 
+                        placeholder="Enter file path (e.g., lib/screens/file.dart)"
+                    >
+                    <button onclick="addFile()">Add File</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Infected Files List</div>
+                <div class="file-list" id="fileList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <p>No infected files found. All clear!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const METADATA_FILE = 'infected_files.json';
+
+        async function loadMetadata() {
+            try {
+                const response = await fetch(METADATA_FILE);
+                return response.ok ? await response.json() : { infected_files: [] };
+            } catch (e) {
+                console.error('Error loading metadata:', e);
+                return { infected_files: [] };
+            }
+        }
+
+        async function saveMetadata(data) {
+            try {
+                await fetch(METADATA_FILE, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showSuccess();
+            } catch (e) {
+                console.error('Error saving metadata:', e);
+                alert('Failed to save. Please check browser console.');
+            }
+        }
+
+        async function addFile() {
+            const input = document.getElementById('fileInput');
+            const filePath = input.value.trim();
+
+            if (!filePath) {
+                alert('Please enter a file path');
+                return;
+            }
+
+            const data = await loadMetadata();
+            if (!data.infected_files.includes(filePath)) {
+                data.infected_files.push(filePath);
+                data.infected_files.sort();
+                await saveMetadata(data);
+                input.value = '';
+                await renderList();
+            } else {
+                alert('This file is already tagged as infected');
+            }
+        }
+
+        async function removeFile(filePath) {
+            const data = await loadMetadata();
+            data.infected_files = data.infected_files.filter(f => f !== filePath);
+            await saveMetadata(data);
+            await renderList();
+        }
+
+        async function renderList() {
+            const data = await loadMetadata();
+            const fileList = document.getElementById('fileList');
+            const count = document.getElementById('infectedCount');
+            const lastUpdated = document.getElementById('lastUpdated');
+
+            count.textContent = data.infected_files.length;
+            
+            const now = new Date();
+            lastUpdated.textContent = now.toLocaleDateString();
+
+            if (data.infected_files.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <p>No infected files found. All clear!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            fileList.innerHTML = data.infected_files.map(file => `
+                <div class="file-item">
+                    <div class="file-item-name">📄 ${file}</div>
+                    <div class="file-item-actions">
+                        <button class="copy-btn" onclick="copyToClipboard('${file}')">Copy</button>
+                        <button onclick="removeFile('${file}')">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccess('Path copied to clipboard');
+            });
+        }
+
+        function showSuccess(msg = 'Operation completed successfully') {
+            const el = document.getElementById('successMsg');
+            el.textContent = '✓ ' + msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // Initialize
+        renderList();
+    </script>
+</body>
+</html>

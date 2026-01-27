@@ -15,9 +15,18 @@ class _EditItemScreenState extends State<EditItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _repo = FirebaseRepository();
 
-  late final TextEditingController _fileName, _fileNameDesc, _format, _formatDesc,
-      _platform, _platformDesc, _source, _sourceDesc, _status, _statusDesc,
-      _storagePath, _storagePathDesc;
+  late final TextEditingController _fileName,
+      _fileNameDesc,
+      _format,
+      _formatDesc,
+      _platform,
+      _platformDesc,
+      _source,
+      _sourceDesc,
+      _status,
+      _statusDesc,
+      _storagePath,
+      _storagePathDesc;
 
   bool _saving = false;
 
@@ -36,7 +45,9 @@ class _EditItemScreenState extends State<EditItemScreen> {
     _status = TextEditingController(text: it?.status ?? '');
     _statusDesc = TextEditingController(text: it?.statusDescription ?? '');
     _storagePath = TextEditingController(text: it?.storagePath ?? '');
-    _storagePathDesc = TextEditingController(text: it?.storagePathDescription ?? '');
+    _storagePathDesc = TextEditingController(
+      text: it?.storagePathDescription ?? '',
+    );
   }
 
   Future<void> _verifyMd5() async {
@@ -46,7 +57,10 @@ class _EditItemScreenState extends State<EditItemScreen> {
     }
     setState(() => _saving = true);
     try {
-      final res = await _repo.triggerMd5Check(_storagePath.text, widget.item!.id);
+      final res = await _repo.triggerMd5Check(
+        _storagePath.text,
+        widget.item!.id,
+      );
       if (mounted) _showDialog("Sukces", "Suma MD5: ${res['md5']}");
     } catch (e) {
       if (mounted) _showDialog("Błąd", "Weryfikacja nieudana: $e");
@@ -55,13 +69,28 @@ class _EditItemScreenState extends State<EditItemScreen> {
     }
   }
 
-  void _showDialog(String t, String c) => showDialog(context: context, builder: (_) => AlertDialog(title: Text(t), content: Text(c), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))]));
-  void _showMsg(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  void _showDialog(String t, String c) => showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text(t),
+      content: Text(c),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("OK"),
+        ),
+      ],
+    ),
+  );
+  void _showMsg(String m) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.item != null ? 'Edytuj (ADMIN)' : 'Dodaj (ADMIN)')),
+      appBar: AppBar(
+        title: Text(widget.item != null ? 'Edytuj metadane' : 'Dodaj metadane'),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -81,20 +110,37 @@ class _EditItemScreenState extends State<EditItemScreen> {
                 label: const Text("Weryfikuj MD5 na serwerze"),
               ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _saving ? null : _save, child: Text(_saving ? "Czekaj..." : "Zapisz")),
+            ElevatedButton(
+              onPressed: _saving ? null : _save,
+              child: Text(_saving ? "Czekaj..." : "Zapisz"),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildField(String label, TextEditingController val, TextEditingController desc) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-      TextFormField(controller: val, decoration: const InputDecoration(hintText: "Wartość")),
-      TextFormField(controller: desc, decoration: const InputDecoration(hintText: "Opis"), maxLines: 2),
-      const SizedBox(height: 16),
-    ]);
+  Widget _buildField(
+    String label,
+    TextEditingController val,
+    TextEditingController desc,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        TextFormField(
+          controller: val,
+          decoration: const InputDecoration(hintText: "Wartość"),
+        ),
+        TextFormField(
+          controller: desc,
+          decoration: const InputDecoration(hintText: "Opis"),
+          maxLines: 2,
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   Future<void> _save() async {

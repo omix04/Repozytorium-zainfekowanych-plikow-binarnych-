@@ -55,7 +55,7 @@ exports.manualMd5Check = onCall({region: "europe-west2"}, async (request) => {
 
 exports.onBinaryCreated = onDocumentCreated({
   region: "europe-west2",
-  document: "binary_items/{docId}",
+  document: "(default)/binary_items/{docId}",
   database: "sala",
 }, async (event) => {
   const data = event.data.data();
@@ -84,7 +84,7 @@ exports.onBinaryCreated = onDocumentCreated({
 
 exports.onBinaryUpdated = onDocumentUpdated({
   region: "europe-west2",
-  document: "binary_items/{docId}",
+  document: "(default)/binary_items/{docId}",
   database: "sala",
 }, async (event) => {
   const before = event.data.before.data();
@@ -120,7 +120,7 @@ exports.onBinaryUpdated = onDocumentUpdated({
 
 exports.onBinaryDeleted = onDocumentDeleted({
   region: "europe-west2",
-  document: "binary_items/{docId}",
+  document: "(default)/binary_items/{docId}",
   database: "sala",
 }, async (event) => {
   const data = event.data.data();
