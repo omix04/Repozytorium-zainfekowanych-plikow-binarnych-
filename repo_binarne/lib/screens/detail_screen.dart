@@ -71,8 +71,10 @@ class DetailScreen extends StatelessWidget {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: const Text('Usunąć metadane?'),
-                    content: const Text('To usunie wpis z Firestore (metadane). Plik w Storage zostanie.'),
+                    title: const Text('Usunąć plik?'),
+                    content: const Text(
+                      'To usunie zarówno metadane z Firestore jak i plik z Firebase Storage. Tej operacji nie można cofnąć.',
+                    ),
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Anuluj')),
                       ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Usuń')),
@@ -81,7 +83,7 @@ class DetailScreen extends StatelessWidget {
                 );
 
                 if (ok == true) {
-                  await repo.deleteItem(item.id);
+                  await repo.deleteItem(item.id, storagePath: item.storagePath);
                   if (context.mounted) Navigator.pop(context);
                 }
               },
