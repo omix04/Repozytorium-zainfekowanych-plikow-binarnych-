@@ -9,7 +9,6 @@ class FirebaseRepository {
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // Inicjalizacja funkcji w konkretnym regionie
   final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'europe-west2');
 
   Stream<List<BinaryItem>> watchItems() {
@@ -18,7 +17,6 @@ class FirebaseRepository {
     });
   }
 
-  // Wywołanie ręcznego sprawdzenia MD5
   Future<Map<String, dynamic>> triggerMd5Check(String storagePath, String docId) async {
     final callable = _functions.httpsCallable('manualMd5Check');
     final result = await callable.call({'storagePath': storagePath, 'docId': docId});
@@ -39,7 +37,6 @@ class FirebaseRepository {
         await _storage.ref(storagePath).delete();
       } catch (e) {
         print('Błąd podczas usuwania pliku z Storage: $e');
-        // Continue even if Storage delete fails - metadata is already deleted
       }
     }
   }

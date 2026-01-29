@@ -12,8 +12,8 @@ class BinaryItem {
   final String statusDescription;
   final String storagePath;
   final String storagePathDescription;
-  final String? md5; // Nowe pole
-  final String? lastVerified; // Nowe pole
+  final String? md5; 
+  final String? lastVerified; 
 
   BinaryItem({
     required this.id,

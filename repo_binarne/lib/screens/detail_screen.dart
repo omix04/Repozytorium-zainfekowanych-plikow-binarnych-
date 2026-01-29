@@ -22,7 +22,6 @@ class DetailScreen extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final logged = _isLogged(user);
 
-    // 🔒 Gość nie widzi metadanych
     if (!logged) {
       return Scaffold(
         appBar: AppBar(title: Text(item.fileName)),
@@ -53,7 +52,6 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(item.fileName),
-        // ✅ Edycja/Usuwanie dla wszystkich zalogowanych użytkowników
         actions: [
           if (logged)
             IconButton(
@@ -94,7 +92,6 @@ class DetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            // 🔴 Infected warning banner
             if (item.status.toLowerCase().trim() == 'infected')
               Container(
                 padding: const EdgeInsets.all(16),
@@ -141,7 +138,6 @@ class DetailScreen extends StatelessWidget {
             _kvWithDesc('status', _safe(item.status), item.statusDescription),
             _kvWithDesc('storagePath', _safe(item.storagePath), item.storagePathDescription),
 
-            // --- NOWA SEKCJA: STATUS BEZPIECZEŃSTWA (MD5) ---
             const Divider(),
             const SizedBox(height: 12),
             const Text('Status Bezpieczeństwa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -162,7 +158,6 @@ class DetailScreen extends StatelessWidget {
               ),
             ),
 
-            // --- KONIEC NOWEJ SEKCJI ---
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 12),

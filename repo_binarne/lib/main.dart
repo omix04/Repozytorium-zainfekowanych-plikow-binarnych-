@@ -9,7 +9,6 @@ import 'services/notification_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // Debug: print Firebase app options so we can verify the project used by web
   try {
     final app = Firebase.app();
     final opts = app.options;
@@ -20,9 +19,6 @@ Future<void> main() async {
     print('FIREBASE APP: cannot read app options: $e');
   }
 
-  // Ensure we have an authenticated user so Firestore rules that require auth
-  // still allow read access for anonymous users. If no user exists, sign in
-  // anonymously; signed-in users (Google/email) will be preserved.
   try {
     final auth = FirebaseAuth.instance;
     if (auth.currentUser == null) {

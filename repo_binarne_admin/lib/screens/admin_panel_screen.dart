@@ -15,7 +15,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   File? _selectedFile;
   bool _isLoading = false;
 
-  // Kontrolery dla pól wymaganych przez użytkownika
   final Map<String, TextEditingController> _controllers = {
     'platform': TextEditingController(text: 'Windows'),
     'platformDescription': TextEditingController(),
